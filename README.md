@@ -13,7 +13,6 @@ I designed and built this website for a local couture business to improve their 
 ## Technologies Used
 - HTML  
 - CSS  
-- JavaScript
 - Google App Scripts
 
 ## Live Site
