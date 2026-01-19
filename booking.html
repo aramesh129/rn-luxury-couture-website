@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment - RN Luxury Couture</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* CALENDAR BOOKING SPECIFIC STYLES */
+    .booking-form {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0;
+      background-color: #fefefe;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-family: "Playfair Display", "Times New Roman", serif;
+      color: #333;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .booking-header {
+      text-align: center;
+      padding: 30px;
+      background: var(--purple);
+      color: var(--gold);
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .booking-header h1 {
+      font-size: 2rem;
+      margin: 0;
+      color: var(--gold);
+    }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      min-height: 500px;
+    }
+
+    /* CALENDAR SECTION */
+    .calendar-section {
+      padding: 30px;
+      background: #f9f9f9;
+      border-right: 2px solid #ddd;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-month {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--purple);
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    .calendar-nav button {
+      background: white;
+      border: 2px solid var(--gold);
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--purple);
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .calendar-nav button:hover {
+      background: var(--gold);
+      color: white;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .weekday-label {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--purple);
+      padding: 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: white;
+      color: #333;
+      font-weight: 600;
+      font-family: "Playfair Display", "Times New Roman", serif;
+    }
+
+    .calendar-day:hover:not(.disabled):not(.selected) {
+      background: var(--pink);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .calendar-day.available {
+      color: var(--purple);
+      background: #fff;
+      border: 2px solid var(--gold);
+    }
+
+    .calendar-day.selected {
+      background: var(--purple);
+      color: var(--gold);
+      font-weight: bold;
+      transform: scale(1.1);
+      border: 2px solid var(--gold);
+    }
+
+    .calendar-day.disabled {
+      color: #ccc;
+      cursor: default;
+      background: transparent;
+    }
+
+    .calendar-day.today {
+      background: var(--gold);
+      color: white;
+    }
+
+    .timezone-display {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #ddd;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--purple);
+      font-weight: bold;
+    }
+
+    /* TIME SLOTS SECTION */
+    .timeslots-section {
+      padding: 30px;
+      background: white;
+    }
+
+    .timeslots-header {
+      margin-bottom: 25px;
+    }
+
+    .selected-date-display {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--purple);
+      margin-bottom: 8px;
+    }
+
+    .availability-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--pink);
+      font-weight: bold;
+    }
+
+    .availability-indicator::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #31c48d;
+      border-radius: 50%;
+    }
+
+    .timeslots-container {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .timeslots-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeslot-btn {
+      border: 2px solid var(--gold);
+      background: white;
+      padding: 16px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--purple);
+      text-align: center;
+      font-family: "Playfair Display", "Times New Roman", serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .timeslot-btn:hover {
+      background: var(--pink);
+      color: white;
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(228, 174, 95, 0.3);
+    }
+
+    .timeslot-btn.selected {
+      background: var(--purple);
+      color: var(--gold);
+      border-color: var(--purple);
+      transform: translateX(4px);
+    }
+
+    .timeslot-btn.selected::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .no-date-selected {
+      text-align: center;
+      color: var(--purple);
+      padding: 60px 20px;
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    /* DETAILS FORM SECTION */
+    .details-form-section {
+      padding: 30px;
+      background: white;
+      border-top: 2px solid var(--gold);
+      display: none;
+    }
+
+    .details-form-section.active {
+      display: block;
+    }
+
+    .details-form-section h2 {
+      font-size: 1.8rem;
+      color: var(--purple);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--purple);
+      font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-family: "Playfair Display", "Times New Roman", serif;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(228, 174, 95, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .selected-appointment-info {
+      background: var(--purple);
+      color: var(--gold);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .submit-booking-btn {
+      width: 100%;
+      padding: 16px;
+      background-color: var(--gold);
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: "Playfair Display", "Times New Roman", serif;
+      margin-top: 10px;
+    }
+
+    .submit-booking-btn:hover {
+      background-color: #b9975b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(228, 174, 95, 0.4);
+    }
+
+    .submit-booking-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* SCROLLBAR STYLING */
+    .timeslots-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .timeslots-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .timeslots-container::-webkit-scrollbar-thumb {
+      background: var(--gold);
+      border-radius: 4px;
+    }
+
+    .timeslots-container::-webkit-scrollbar-thumb:hover {
+      background: #b9975b;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .calendar-section {
+        border-right: none;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .booking-form {
+        margin: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav class="navbar">
+    <div class="logo"><a href="index.html">RN</a></div>
+    <ul class="nav-links">
+      <li><a href="about.html">About Us</a></li>
+      <li><a href="index.html">Home</a></li>
+        <a href="services.html">Our Services</a>
+      </li>
+      <li><a href="contact.html">Contact Us</a></li>
+      <li><a href="booking.html" class="btn-book">Book Appointment</a></li>
+    </ul>
+    <a href="booking_es.html" class="lang-switch">ES</a>
+  </nav>
+</header>
+
+<main>
+  <section class="booking-form">
+    <!-- HEADER -->
+    <div class="booking-header">
+      <h1>Appointment Booking</h1>
+    </div>
+
+    <!-- MAIN BOOKING LAYOUT -->
+    <div class="booking-layout">
+      <!-- LEFT: CALENDAR -->
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <div class="calendar-month" id="currentMonth">October 2025</div>
+          <div class="calendar-nav">
+            <button id="prevMonth" aria-label="Previous month">‹</button>
+            <button id="nextMonth" aria-label="Next month">›</button>
+          </div>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="weekday-label">Sun</div>
+          <div class="weekday-label">Mon</div>
+          <div class="weekday-label">Tue</div>
+          <div class="weekday-label">Wed</div>
+          <div class="weekday-label">Thu</div>
+          <div class="weekday-label">Fri</div>
+          <div class="weekday-label">Sat</div>
+        </div>
+
+        <div class="calendar-days" id="calendarDays"></div>
+
+        <div class="timezone-display">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Eastern Time - US & Canada</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: TIME SLOTS -->
+      <div class="timeslots-section">
+        <div class="timeslots-header">
+          <div class="selected-date-display" id="selectedDateDisplay">Select a date</div>
+          <div class="availability-indicator" id="availabilityNote" style="display: none;">
+            times you're available
+          </div>
+        </div>
+
+        <div class="timeslots-container" id="timeslotsContainer">
+          <div class="no-date-selected">Please select a date from the calendar to view available times</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS FORM (Shows after time selection) -->
+    <div class="details-form-section" id="detailsFormSection">
+      <h2>Complete Your Booking</h2>
+      
+      <div class="selected-appointment-info" id="appointmentInfo"></div>
+
+      <form id="bookingForm" action="YOUR_GOOGLE_APPS_SCRIPT_URL" method="POST">
+        <input type="hidden" id="selectedDateInput" name="date">
+        <input type="hidden" id="selectedTimeInput" name="time">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Jane Doe" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" placeholder="jane@example.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" placeholder="(123) 456-7890" required>
+          </div>
+
+          <div class="form-group">
+            <label for="service">Select Service *</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Choose a service</option>
+              <option value="consultation">Personal Consultation</option>
+              <option value="fitting">Fitting & Measurements</option>
+              <option value="customDesign">Custom Design Session</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Additional Notes</label>
+            <textarea id="notes" name="notes" placeholder="Tell us about your style preferences, special requests, or any questions..."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-booking-btn">Confirm Appointment</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-content">
+    <!-- Logo Section -->
+    <div class="footer-logo-section">
+      <img src="https://lh3.googleusercontent.com/d/1ZVon9E8R96fcBGDzjRAOBgsb_BfWwrCQ" alt="RN Luxury Couture Logo" class="footer-logo">
+      <p class="footer-tagline">At RN Luxury Couture, we believe clothing should adapt to you—not the other way around.</p>
+    </div>
+
+    <!-- Links Column -->
+    <div class="footer-column">
+      <h4>LINKS</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+        <li><a href="booking.html">Book Now</a></li>
+      </ul>
+    </div>
+
+    <!-- Services Column -->
+    <div class="footer-column">
+      <h4>SERVICES</h4>
+      <ul>
+        <li><a href="services.html">Prom Dresses</a></li>
+        <li><a href="services.html">Wedding Dresses</a></li>
+        <li><a href="services.html">Tailoring</a></li>
+        <li><a href="services.html">Hemming</a></li>
+      </ul>
+    </div>
+
+    <!-- Hours Column -->
+    <div class="footer-column">
+      <h4>OUR HOURS</h4>
+      <p class="hours-day"><strong>Monday:</strong> <span class="hours-time">CLOSED</span></p>
+      <p class="hours-day"><strong>Tuesday-Friday:</strong> <span class="hours-time">12pm - 6pm</span><br><span class="hours-time">(Alterations and Appointments)</span></p>
+      <p class="hours-day"><strong>Saturday-Sunday:</strong> <span class="hours-time">6pm - 12pm</span><br><span class="hours-time">(Boutique Shopping Hours)</span></p>
+    </div>
+
+    <!-- Contact Column -->
+    <div class="footer-column">
+      <h4>CONTACT US</h4>
+      <p><a href="mailto:RNemail@gmail.com" style="color: var(--gold); text-decoration: none;">RNemail@gmail.com</a></p>
+      <p><a href="tel:+17656051622" style="color: var(--gold); text-decoration: none;">(765) 605-1622</a></p>
+      <p>708 N Earl Ave Suite A,<br>Lafayette, IN 47904</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// STATE MANAGEMENT
+let currentDate = new Date();
+let selectedDate = null;
+let selectedTime = null;
+
+// AVAILABLE TIME SLOTS (Customize these)
+const timeSlots = [
+  '9:30am', '10:00am', '10:30am', '11:00am', 
+  '11:30am', '12:00pm', '12:30pm', '1:00pm',
+  '1:30pm', '2:00pm', '2:30pm', '3:00pm',
+  '3:30pm', '4:00pm', '4:30pm', '5:00pm'
+];
+
+// Business hours: Tuesday-Friday 12pm-6pm, Saturday-Sunday 6am-12pm
+const businessHours = {
+  2: { start: 12, end: 18 }, // Tuesday
+  3: { start: 12, end: 18 }, // Wednesday
+  4: { start: 12, end: 18 }, // Thursday
+  5: { start: 12, end: 18 }, // Friday
+  6: { start: 6, end: 12 },  // Saturday
+  0: { start: 6, end: 12 }   // Sunday
+};
+
+// CALENDAR FUNCTIONS
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  // Update month display
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+  
+  // Get first day of month and number of days
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  
+  // Clear calendar
+  const calendarDays = document.getElementById('calendarDays');
+  calendarDays.innerHTML = '';
+  
+  // Add empty cells for days before month starts
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDay = document.createElement('button');
+    emptyDay.className = 'calendar-day disabled';
+    emptyDay.disabled = true;
+    calendarDays.appendChild(emptyDay);
+  }
+  
+  // Add days of month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayButton = document.createElement('button');
+    dayButton.className = 'calendar-day';
+    dayButton.textContent = day;
+    
+    const currentDateInLoop = new Date(year, month, day);
+    const dayOfWeek = currentDateInLoop.getDay();
+    
+    // Check if date is in the past
+    const isPast = currentDateInLoop < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Check if day is within business hours
+    const isBusinessDay = businessHours.hasOwnProperty(dayOfWeek);
+    
+    if (isPast || !isBusinessDay) {
+      dayButton.classList.add('disabled');
+      dayButton.disabled = true;
+    } else {
+      dayButton.classList.add('available');
+      dayButton.onclick = () => selectDate(year, month, day);
+    }
+    
+    // Mark today
+    if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+      dayButton.classList.add('today');
+    }
+    
+    // Mark selected date
+    if (selectedDate && 
+        day === selectedDate.getDate() && 
+        month === selectedDate.getMonth() && 
+        year === selectedDate.getFullYear()) {
+      dayButton.classList.add('selected');
+    }
+    
+    calendarDays.appendChild(dayButton);
+  }
+}
+
+function selectDate(year, month, day) {
+  selectedDate = new Date(year, month, day);
+  selectedTime = null; // Reset time selection
+  
+  renderCalendar();
+  renderTimeSlots();
+  
+  // Hide form section when new date is selected
+  document.getElementById('detailsFormSection').classList.remove('active');
+}
+
+function renderTimeSlots() {
+  const container = document.getElementById('timeslotsContainer');
+  const dateDisplay = document.getElementById('selectedDateDisplay');
+  const availabilityNote = document.getElementById('availabilityNote');
+  
+  if (!selectedDate) {
+    container.innerHTML = '<div class="no-date-selected">Please select a date from the calendar to view available times</div>';
+    dateDisplay.textContent = 'Select a date';
+    availabilityNote.style.display = 'none';
+    return;
+  }
+  
+  // Format date display
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  dateDisplay.textContent = selectedDate.toLocaleDateString('en-US', options);
+  availabilityNote.style.display = 'flex';
+  
+  // Generate time slots
+  const timeslotsGrid = document.createElement('div');
+  timeslotsGrid.className = 'timeslots-grid';
+  
+  timeSlots.forEach(time => {
+    const button = document.createElement('button');
+    button.className = 'timeslot-btn';
+    button.textContent = time;
+    button.type = 'button';
+    
+    if (selectedTime === time) {
+      button.classList.add('selected');
+    }
+    
+    button.onclick = () => selectTime(time);
+    timeslotsGrid.appendChild(button);
+  });
+  
+  container.innerHTML = '';
+  container.appendChild(timeslotsGrid);
+}
+
+function selectTime(time) {
+  selectedTime = time;
+  renderTimeSlots();
+  
+  // Show form section
+  const formSection = document.getElementById('detailsFormSection');
+  formSection.classList.add('active');
+  
+  // Update appointment info
+  const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+  const dateStr = selectedDate.toLocaleDateString('en-US', options);
+  document.getElementById('appointmentInfo').textContent = `${dateStr} at ${time}`;
+  
+  // Set hidden form fields
+  document.getElementById('selectedDateInput').value = selectedDate.toISOString().split('T')[0];
+  document.getElementById('selectedTimeInput').value = time;
+  
+  // Scroll to form
+  formSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// NAVIGATION
+document.getElementById('prevMonth').onclick = () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+};
+
+document.getElementById('nextMonth').onclick = () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+};
+
+// FORM SUBMISSION
+document.getElementById('bookingForm').onsubmit = (e) => {
+  e.preventDefault();
+  
+  if (!selectedDate || !selectedTime) {
+    alert('Please select a date and time');
+    return;
+  }
+  
+  // Here the form would normally submit to Google Apps Script
+  // For now, just show confirmation
+  alert(`Booking confirmed!\n\nDate: ${selectedDate.toLocaleDateString()}\nTime: ${selectedTime}\n\nYou will receive a confirmation email shortly.`);
+  
+  // Uncomment below to actually submit
+  // e.target.submit();
+};
+
+// INITIALIZE
+renderCalendar();
+</script>
